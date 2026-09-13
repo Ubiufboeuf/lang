@@ -15,7 +15,7 @@ export async function hmr (desiredPath: string, callback: (fileContent: string) 
     try {
       const fileContent = await readFile(absolutePath, 'utf8')
       callback(fileContent)
-    } catch (err) {/* empty */}
+    } catch {/* empty */}
   }
 
   if (execOnLoad) await executeCode()
