@@ -1,12 +1,6 @@
 import { KEY_TOKENS, KEY_VALUE_TOKENS } from './constants/tokenConstants'
+import { getText, isNumber, isText } from './lib/utils'
 import type { KToken, KTokenType, KVToken, KVTokenType, Token, TokenType } from './types/tokenTypes'
-
-const isText = (str: string) => Boolean(str.match(/('.*')|(".*")/))
-const isNumber = (str: string) => !isNaN(Number(str))
-const getText = (str: string) => {
-  const match = str.match(/(?:'(.*)')|(?:"(.*)")/)
-  return match ? (match[1] ?? match[2]) : null
-}
 
 export function tokenize (code: string): Token[] {
   const line = code.replaceAll(/[\n;]/g, ';').replaceAll(/;+/g, ';')
