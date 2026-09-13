@@ -13,6 +13,7 @@ export async function hmr (desiredPath: string, callback: (fileContent: string) 
 
   async function executeCode () {
     try {
+      console.clear()
       const fileContent = await readFile(absolutePath, 'utf8')
       callback(fileContent)
     } catch {/* empty */}
