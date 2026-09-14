@@ -1,69 +1,161 @@
 import { KEY_TOKENS, KEY_VALUE_TOKENS } from './constants/tokenConstants'
-import { getText, isNumber, isText } from './lib/utils'
-import type { KToken, KTokenType, KVToken, KVTokenType, Token, TokenType } from './types/tokenTypes'
+import { isIdentifier, isKeyword, isNumber, isText } from './lib/utils'
+import type { KTokenType, KVTokenType, Token, TokenType } from './types/tokenTypes'
+
+type InComment = 'line' | 'block' | false
+type InString = 'simple' | 'doble' | false
 
 export function tokenize (code: string): Token[] {
-  const line = code.replaceAll(/[\n;]/g, ';').replaceAll(/;+/g, ';')
-  const partsOfCodeLine = line.split(/(?<=;)/).map(p => p.trim()).filter(Boolean)
   const tokens: Token[] = []
+  let cursor = 0
+  let acc = ''
+  let inComment: InComment = false
+  let inString: InString = false
 
-  for (const partOCL of partsOfCodeLine) {
-    const groups = partOCL.match(/(?<var_keyword>var)(?<var_name>.*)(?<assign>=)(?<var_value>.*)(?<semicolon>;)/)?.groups
+  while (cursor < code.length) {
+    const char = code[cursor]
 
-    if (!groups) {
-      console.error('No hay grupos capturados')
+    if (!char) {
+      console.error('No hay carácter')
       continue
     }
-   
-    for (const [k, v] of Object.entries(groups)) {
-      const key = k
-      let value = v.trim()
-
-      // console.log(`${key.padEnd(12)}= ${value}`)
-
-      const tokenType = getTokenType(key, value)
-      if (!tokenType) continue
-      if (tokenType === 'string') value = getText(value) ?? value
-
-      if (isKeyToken(tokenType)) {
-        const token: KToken = {
-          type: tokenType
-        }
-        tokens.push(token)
+    
+    if (char === '/') {
+      if (code[cursor - 1] === '/') {
+        inComment = 'line'
+      } else {
+        acc = ''
       }
 
-      if (isKeyValueToken(tokenType)) { 
-        const token: KVToken = {
-          type: tokenType,
-          value
-        }
-        tokens.push(token)
-      }
+      acc += char
+      
+      cursor++
+      continue
     }
+
+    if (char === ';') {
+      if (inString) {
+        acc += char
+        cursor++
+        continue
+      }
+
+      if (acc) tokens.push({ type: getAccumulatorType(acc, inString), value: acc })
+      acc = ''
+
+      tokens.push({ type: 'semicolon' })
+      
+      cursor++
+      continue
+    }
+
+    if (/[\n\r]/.test(char)) {
+      if (inComment === 'line') {
+        inComment = false
+
+        tokens.push({ type: 'line-comment', value: acc })
+        acc = ''
+        
+        cursor++
+        continue
+      }
+
+      if (acc) tokens.push({ type: getAccumulatorType(acc, inString), value: acc })
+      acc = ''
+
+      cursor++
+      continue
+    }
+
+    if (inComment) {
+      acc += char
+
+      cursor++
+      continue
+    }
+
+    if (/\s/.test(char)) {
+      if (inString) {
+        acc += char
+        cursor++
+        continue
+      }
+      
+      if (acc) tokens.push({ type: getAccumulatorType(acc, inString), value: acc })
+      acc = ''
+
+      cursor++
+      continue
+    }
+
+    if (char === '=') {
+      if (inString) {
+        acc += char
+        cursor++
+        continue
+      }
+      
+      if (acc) tokens.push({ type: getAccumulatorType(acc, inString), value: acc })
+      acc = ''
+      
+      tokens.push({ type: 'assign' })
+      
+      cursor++
+      continue
+    }
+
+    const isStringLimit = (char === '\'' || char === '"') && code[cursor - 1] !== '\\'
+
+    if (isStringLimit) {
+      if (inString === 'simple' && char === '\'') {
+        acc += char
+        
+        tokens.push({ type: getAccumulatorType(acc, inString), value: acc })
+
+        acc = ''
+        inString = false
+        
+        cursor++
+        continue
+      }
+
+      if (inString === 'doble' && char === '"') {
+        acc += char
+
+        tokens.push({ type: getAccumulatorType(acc, inString), value: acc })
+
+        acc = ''
+        inString = false
+
+        cursor++
+        continue
+      }
+
+      if (!inString) {
+        inString = char === '\'' ? 'simple' : 'doble'
+      }
+      
+      acc += char
+      cursor++
+      continue
+    }
+    
+    if (/[0-9]/.test(char)) {
+      acc += char
+      cursor++
+      continue
+    }
+    
+    if (/[A-z]/.test(char)) {
+      acc += char
+      cursor++
+      continue
+    }
+ 
+    cursor++
   }
 
-  // console.log('tokens', tokens)
   return tokens
-}
-
-function getTokenType (key: string, value: string): TokenType | null {
-  // KTokenType
-  if (key === 'assign') return 'assign'
-  if (key === 'semicolon') return 'semicolon'
-  
-  // KVTokenType
-  if (key === 'var_keyword') return 'keyword'
-  if (key === 'var_name') {
-    return 'identifier'
-  }
-  if (key === 'var_value') {
-    if (isText(value)) return 'string'
-    if (isNumber(value)) return 'number'
-    // variable, expresión, etc
-  }
-
-  console.error('Token inválido')
-  return null
 }
 
 function isKeyToken (str: unknown): str is KTokenType {
@@ -72,4 +164,16 @@ function isKeyToken (str: unknown): str is KTokenType {
 
 function isKeyValueToken (str: unknown): str is KVTokenType {
   return KEY_VALUE_TOKENS.some((k) => k === str)
+}
+
+function getAccumulatorType (acc: string, inString: InString): TokenType {
+  // if (acc.startsWith('//')) return 'line-comment'
+  if (inString) return 'string'
+  if (isKeyword(acc)) return 'keyword'
+  if (isText(acc)) return 'string'
+  if (isNumber(acc)) return 'number'
+  if (isIdentifier(acc)) return 'identifier'
+
+  console.error(`Error de sintaxis: Identificador inválido '${acc}'`)
+  throw new Error('Invalid Token')
 }
