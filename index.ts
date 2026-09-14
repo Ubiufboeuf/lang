@@ -1,4 +1,4 @@
-import { interpret } from './src/interpreter'
+import { repl } from './src/interpreter'
 import { hmr } from './src/hmr'
 
-hmr('index.zen', (code) => interpret(code), { execOnLoad: true })
+hmr('index.zen', (code) => repl(code), { execOnLoad: true })
