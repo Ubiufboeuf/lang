@@ -1,4 +1,4 @@
-import { tokenize } from './tokenizer'
+import { tokenize } from './tokens/tokenizer'
 // import { parse } from './parser'
 // import { repl } from './repl'
 

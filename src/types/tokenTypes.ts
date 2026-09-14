@@ -15,3 +15,15 @@ export interface KVToken {
 
 export type TokenType = KTokenType | KVTokenType
 export type Token = KVToken | KToken 
+
+export type InComment = 'line' | 'block' | false
+export type InString = 'simple' | 'doble' | false
+
+export interface TokenizerStore {
+  code: string
+  tokens: Token[]
+  cursor: number
+  acc: string
+  inComment: InComment
+  inString: InString
+}
