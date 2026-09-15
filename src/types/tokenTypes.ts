@@ -1,6 +1,4 @@
-import type { KEY_TOKENS, KEY_VALUE_TOKENS, KEYWORDS } from '../constants/tokenConstants'
-
-export type Keyword = typeof KEYWORDS[number]
+import type { KEY_TOKENS, KEY_VALUE_TOKENS } from '../constants/tokenConstants'
 
 export type KTokenType = typeof KEY_TOKENS[number]
 export interface KToken {

@@ -1,7 +1,7 @@
-import { KEYWORDS } from '../constants/tokenConstants'
-import type { Keyword } from '../types/tokenTypes'
+import { KEYWORDS } from '../constants/keywordConstants'
+import type { Keyword } from '../types/keywordTypes'
 
-export const isKeyword = (str: string) => KEYWORDS.includes(str as Keyword)
+export const isKeyword = (str: string): str is Keyword => KEYWORDS.includes(str as Keyword)
 export const isText = (str: string) => Boolean(str.match(/('.*')|(".*")/))
 export const isNumber = (str: string) => !isNaN(Number(str))
 export const getText = (str: string) => {
