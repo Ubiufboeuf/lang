@@ -12,6 +12,7 @@ import { ESCAPE_CHARS } from '../constants/escapeConstants'
 import type { EscapeChar } from '../types/escapeTypes'
 
 export function tokenize (code: string): Token[] {
+  tokenizerStore.reset()
   tokenizerStore.code = code
   
   while (tokenizerStore.cursor < code.length) {

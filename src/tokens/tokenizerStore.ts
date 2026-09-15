@@ -6,5 +6,13 @@ export const tokenizerStore: TokenizerStore = {
   cursor: 0,
   acc: '',
   inComment: false,
-  inString: false
+  inString: false,
+  reset () {
+    this.code = ''
+    this.tokens = []
+    this.cursor = 0
+    this.acc = ''
+    this.inComment = false
+    this.inString = false
+  }
 }

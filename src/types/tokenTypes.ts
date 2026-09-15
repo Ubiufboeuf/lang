@@ -24,4 +24,5 @@ export interface TokenizerStore {
   acc: string
   inComment: InComment
   inString: InString
+  reset: () => void
 }
