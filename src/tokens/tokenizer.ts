@@ -8,12 +8,15 @@ import { tokenizerStore } from './tokenizerStore'
 import { handleLinebreak } from './handleLinebreak'
 import { handleSemicolon } from './handleSemicolon'
 import { handleComment } from './handleComment'
+import { ESCAPE_CHARS } from '../constants/escapeConstants'
+import type { EscapeChar } from '../types/escapeTypes'
 
 export function tokenize (code: string): Token[] {
   tokenizerStore.code = code
   
   while (tokenizerStore.cursor < code.length) {
     const char = code[tokenizerStore.cursor]
+    const nextChar = code[tokenizerStore.cursor + 1]
 
     if (!char) {
       console.error('No hay carácter')
@@ -45,9 +48,19 @@ export function tokenize (code: string): Token[] {
       continue
     }
 
-    const isStringLimit = (char === '\'' || char === '"') && code[tokenizerStore.cursor - 1] !== '\\'
+    const isStringLimit = (char === '\'' || char === '"')
     if (isStringLimit) {
       handleString(char)
+      continue
+    }
+
+    if (char === '\\' && nextChar && isEscapeChar(char)) {
+      const escapeChar = getEscapeChar(nextChar)
+      if (!escapeChar) {
+        throw new Error('Error inesperado. Carácter de escape inválido')
+      }
+      accumulateCharacter(escapeChar)
+      tokenizerStore.cursor++
       continue
     }
     
@@ -68,6 +81,25 @@ export function isKeyToken (str: unknown): str is KTokenType {
 
 export function isKeyValueToken (str: unknown): str is KVTokenType {
   return KEY_VALUE_TOKENS.some((k) => k === str)
+}
+
+export function isEscapeChar (char: string): char is EscapeChar {
+  return Boolean(ESCAPE_CHARS.includes(char as EscapeChar))
+}
+
+export function getEscapeChar (char: string): string | undefined {
+  if (char === 'n') return '\n'
+  if (char === 't') return '\t'
+  if (char === 'r') return '\r'
+  if (char === 'b') return '\b'
+  if (char === 'f') return '\f'
+  if (char === 'v') return '\v'
+  if (char === '0') return '\0'
+  if (char === '\\') return '\\'
+  if (char === '\'') return '\''
+  if (char === '"') return '"'
+  
+  return undefined
 }
 
 export function getAccumulatorType (acc: string, inString: InString): TokenType {
