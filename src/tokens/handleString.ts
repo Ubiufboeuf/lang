@@ -1,36 +1,72 @@
-import { getAccumulatorType } from './tokenizer'
+import { getAccumulatorType, getEscapeChar, isEscapeChar } from './tokenizer'
 import { tokenizerStore } from './tokenizerStore'
 
 export function handleString (char: string) {
-  const { tokens, inString } = tokenizerStore
-  let { acc } = tokenizerStore
+  const { code, tokens } = tokenizerStore
+  let { acc, cursor } = tokenizerStore
+
+  const result = findEndOfString(char, cursor, code)
+  if (!result?.endOfString) {
+    throw new Error('String mal armado')
+  }
+
+  const { endOfString, escapeChars } = result
+
+  while (cursor < endOfString) {
+    const char = code[cursor]
+    if (!char) continue
+
+    if (escapeChars.includes(cursor)) {
+      
+      acc += getEscapeChar(char)
+      cursor++
+      continue
+    }
+
+    if (char !== '\\') acc += char
+    cursor++
+  }
+
   
-  if (inString === 'simple' && char === '\'') {
-    acc += char
-    
-    tokens.push({ type: getAccumulatorType(acc, inString), value: acc })
+  tokens.push({ type: getAccumulatorType(acc), value: acc.slice(1, -1) })
+  
+  tokenizerStore.acc = ''
+  tokenizerStore.cursor = cursor
+}
 
-    tokenizerStore.acc = ''
-    tokenizerStore.inString = false
-    tokenizerStore.cursor++
-    return
+interface EndOfString {
+  endOfString: number
+  escapeChars: number[]
+}
+
+function findEndOfString (char: string, cursor: number, code: string): EndOfString | undefined {
+  let internalCursor = cursor + 1
+  let endOfString
+  const escapeChars: number[] = []
+
+  while (internalCursor < code.length) {
+    const internalChar = code[internalCursor]
+    const nextInternalChar = code[internalCursor + 1]
+
+    if (internalChar === '\\' && nextInternalChar && isEscapeChar(internalChar)) {
+      const escapeChar = getEscapeChar(nextInternalChar)
+      if (!escapeChar) {
+        throw new Error('Error inesperado. Carácter de escape inválido')
+      }
+      
+      escapeChars.push(internalCursor + 1)
+      
+      internalCursor += 2
+      continue
+    }
+
+    if (internalChar === char) {
+      endOfString = internalCursor + 1
+      return { endOfString, escapeChars }
+    }
+
+    internalCursor++
   }
-
-  if (inString === 'doble' && char === '"') {
-    acc += char
-
-    tokens.push({ type: getAccumulatorType(acc, inString), value: acc })
-
-    tokenizerStore.acc = ''
-    tokenizerStore.inString = false
-    tokenizerStore.cursor++
-    return
-  }
-
-  if (!inString) {
-    tokenizerStore.inString = char === '\'' ? 'simple' : 'doble'
-  }
-
-  tokenizerStore.acc += char
-  tokenizerStore.cursor++
+  
+  return undefined
 }

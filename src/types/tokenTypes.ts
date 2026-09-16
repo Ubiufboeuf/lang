@@ -23,6 +23,5 @@ export interface TokenizerStore {
   cursor: number
   acc: string
   inComment: InComment
-  inString: InString
   reset: () => void
 }

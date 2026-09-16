@@ -1,6 +1,6 @@
 import { KEY_TOKENS, KEY_VALUE_TOKENS } from '../constants/tokenConstants'
 import { isIdentifier, isKeyword, isNumber, isText } from '../lib/utils'
-import type { InString, KTokenType, KVTokenType, Token, TokenType } from '../types/tokenTypes'
+import type { KTokenType, KVTokenType, Token, TokenType } from '../types/tokenTypes'
 import { handleString } from './handleString'
 import { handleSeparator } from './handleSeparator'
 import { accumulateCharacter } from './accumulateCharacter'
@@ -54,16 +54,6 @@ export function tokenize (code: string): Token[] {
       handleString(char)
       continue
     }
-
-    if (char === '\\' && nextChar && isEscapeChar(char)) {
-      const escapeChar = getEscapeChar(nextChar)
-      if (!escapeChar) {
-        throw new Error('Error inesperado. Carácter de escape inválido')
-      }
-      accumulateCharacter(escapeChar)
-      tokenizerStore.cursor++
-      continue
-    }
     
     if (/[0-9|A-z]/.test(char)) {
       accumulateCharacter(char)
@@ -103,9 +93,8 @@ export function getEscapeChar (char: string): string | undefined {
   return undefined
 }
 
-export function getAccumulatorType (acc: string, inString: InString): TokenType {
+export function getAccumulatorType (acc: string): TokenType {
   // if (acc.startsWith('//')) return 'line-comment'
-  if (inString) return 'string'
   if (isKeyword(acc)) return 'keyword'
   if (isText(acc)) return 'string'
   if (isNumber(acc)) return 'number'
