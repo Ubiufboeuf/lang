@@ -10,6 +10,7 @@ import { handleSemicolon } from './handleSemicolon'
 import { handleComment } from './handleComment'
 import { ESCAPE_CHARS } from '../constants/escapeConstants'
 import type { EscapeChar } from '../types/escapeTypes'
+import { handleNumber } from './handleNumber'
 
 export function tokenize (code: string): Token[] {
   tokenizerStore.reset()
@@ -54,9 +55,15 @@ export function tokenize (code: string): Token[] {
       handleString(char)
       continue
     }
+
+    if (/[0-9]/.test(char)) {
+      handleNumber(char)
+      continue
+    }
     
     if (/[0-9|A-z]/.test(char)) {
       accumulateCharacter(char)
+      // handleIdentifier
       continue
     }
  

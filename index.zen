@@ -1,21 +1,2 @@
-// 1. Conflicto de prefijos: ¿Se confunde "variable" con la keyword "var"?
-var variable = 10
-
-// 2. Cadenas vacías y caracteres especiales adentro
-var vacio = '';
-var simbolos = 'var a = 5; === ;;;';
-
-// 3. Comillas escapadas complejas (escapando la barra y la comilla)
-var escapeMaligno = 'It\'s a "trap" \\\' and it works';
-
-// 4. Sintaxis compacta sin espacios (prueba si el lexer separa bien sin ayuda visual)
-var x=42;var y="sinEspacios";var z='mixto"comillas"';
-
-// 5. El test definitivo: Un string que adentro tiene código falso
-var codigoFalso = "var b = 'esto no es codigo, es texto';";
-
-// 6. Espacios en blanco masivos, tabs y saltos de línea locos
-	
-    var    loco		=	
-    
-    999;
+var PI = 3.141592
+var e = 'a';
