@@ -4,5 +4,5 @@ export function repl (code: string) {
   const tokens = tokenize(code)
   console.log(tokens)
   // const ast = parse(tokens)
-  // evaluate(ast)
+  // console.log(ast)
 }
