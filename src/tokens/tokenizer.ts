@@ -56,7 +56,7 @@ export function tokenize (code: string): Token[] {
       continue
     }
 
-    if (/[0-9]/.test(char)) {
+    if (/[0-9]/.test(char) || (char === '.' && /[0-9]/.test(nextChar ?? ''))) {
       handleNumber(char)
       continue
     }
