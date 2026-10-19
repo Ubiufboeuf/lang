@@ -1,0 +1,6 @@
+{
+  "conventionalCommits.scopes": [
+    "lexer",
+    "config"
+  ]
+}
