@@ -1,2 +1,2 @@
-var PI = 3.141592
-var e = 'a';
+var a = 'e'
+var b = a
